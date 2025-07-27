@@ -20,16 +20,30 @@ class ActivityFormController extends Controller
 
     public function index()
     {
-        $user = Auth::user();
-
-        if ($user->hasRole('admin')) {
-            $activities = ActivityForm::latest()->paginate(10);
-        } else {
-            $activities = ActivityForm::where('created_by', $user->id)->latest()->paginate(10);
-        }
-
+        // untuk halaman kegiatan
+        $activities = ActivityForm::latest()->paginate(10);
         return view('activity_forms.index', compact('activities'));
     }
+
+    public function pengajuan()
+    {
+        $activities = Activity::with('user', 'activityForm')->latest()->get();
+        return view('admin.status.pengajuan', compact('activities'));
+    }
+
+
+    public function approve(Activity $activity)
+    {
+        $activity->update(['status' => 'disetujui']);
+        return redirect()->back()->with('success', 'Pengajuan disetujui.');
+    }
+
+    public function reject(Activity $activity)
+    {
+        $activity->update(['status' => 'ditolak']);
+        return redirect()->back()->with('success', 'Pengajuan ditolak.');
+    }
+
 
     public function exportPdf()
     {
@@ -77,7 +91,7 @@ class ActivityFormController extends Controller
             'created_by' => Auth::id(),
         ]);
 
-        return redirect()->route('forms.index')->with('success', 'Activity Form created successfully');
+        return redirect()->route('admin.forms.index')->with('success', 'Activity Form created successfully');
     }
 
     /**
@@ -93,11 +107,12 @@ class ActivityFormController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit($id)
     {
-        $activity = ActivityForm::findorFail($id);
+        $activity = ActivityForm::findOrFail($id);
         return view('activity_forms.edit', compact('activity'));
     }
+
 
     /**
      * Update the specified resource in storage.
@@ -110,7 +125,7 @@ class ActivityFormController extends Controller
         ]);
         $activity = ActivityForm::findorFail($id);
         $activity->update($request->all());
-        return redirect()->route('forms.index')->with('success', 'Activity updated successfully');
+        return redirect()->route('admin.forms.index')->with('success', 'Activity updated successfully');
     }
 
     /**
@@ -120,6 +135,6 @@ class ActivityFormController extends Controller
     {
         $activity = ActivityForm::findorFail($id);
         $activity->delete();
-        return redirect()->route('forms.index')->with('success', 'Activity deleted successfully');
+        return redirect()->route('admin.forms.index')->with('success', 'Activity deleted successfully');
     }
 }

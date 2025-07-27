@@ -48,4 +48,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(ActivityForm::class, 'created_by');
     }
+
+    public function user()
+    {
+        return $this->hasMany(Activity::class);
+    }
 }

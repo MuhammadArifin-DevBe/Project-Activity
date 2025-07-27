@@ -9,9 +9,9 @@ class ActivityForm extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'description', 'created_by'];
+    protected $fillable = ['title', 'description'];
 
     public function creator()
     {
-        return $this->belongsTo(User::class, 'created_by');
+    return $this->belongsTo(User::class, 'user_id');
     }}

@@ -1,10 +1,11 @@
 @extends('layouts.app')
 
+@role('admin')
 @section('content')
 <div class="max-w-2xl mx-auto mt-10 bg-white p-6 rounded shadow">
     <h2 class="text-xl font-bold mb-4">Buat Form Kegiatan</h2>
 
-    <form action="{{ route('forms.store') }}" method="POST">
+    <form action="{{ route('admin.forms.store') }}" method="POST">
         @csrf
 
         <div class="mb-4">
@@ -26,3 +27,5 @@
     </form>
 </div>
 @endsection
+@endrole
+

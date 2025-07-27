@@ -14,10 +14,15 @@ class ActivityController extends Controller
      */
     public function index()
     {
-        // Kalau admin, tampilkan semua, kalau bukan, hanya yang dibuat oleh user itu
         $user = Auth::user();
 
-        $user->role === 'admin'
+        // Optional: batasi akses jika bukan user
+        if ($user->role !== 'user') {
+            abort(403, 'Akses ditolak.');
+        }
+
+        // Ambil semua activity milik user yang login
+        $activities = $user->role === 'admin'
             ? Activity::with('activityForm', 'user')->latest()->get()
             : Activity::with('activityForm')->where('user_id', $user->id)->latest()->get();
 
@@ -33,6 +38,7 @@ class ActivityController extends Controller
         return view('activities.create', compact('activityForms'));
     }
 
+
     /**
      * Simpan aktivitas baru yang diisi oleh user.
      */
@@ -40,6 +46,7 @@ class ActivityController extends Controller
     {
         $request->validate([
             'activity_form_id' => 'required|exists:activity_forms,id',
+            'title' => 'nullable|string',
             'description' => 'required|string',
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
@@ -48,13 +55,15 @@ class ActivityController extends Controller
         Activity::create([
             'user_id' => Auth::id(),
             'activity_form_id' => $request->activity_form_id,
+            // 'title' => $request->title,
             'description' => $request->description,
             'tanggal_mulai' => $request->tanggal_mulai,
             'tanggal_selesai' => $request->tanggal_selesai,
             'status' => 'menunggu',
+            'user_id' => auth()->id(),
         ]);
 
-        return redirect()->route('activities.index')->with('success', 'Aktivitas berhasil dikirim!');
+        return redirect()->route('user.activities.index')->with('success', 'Aktivitas berhasil dikirim!');
     }
 
     /**
@@ -68,24 +77,52 @@ class ActivityController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit($id)
     {
-        //
+        // Ambil data aktivitas berdasarkan ID
+        $activity = Activity::findOrFail($id);
+
+        // Ambil semua form aktivitas untuk dropdown judul
+        $activityForms = ActivityForm::all();
+
+        return view('activities.edit', compact('activity', 'activityForms'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        //
+        // Validasi input dari form
+        $request->validate([
+            'activity_form_id' => 'required|exists:activity_forms,id',
+            'description' => 'required|string',
+            'tanggal_mulai' => 'required|date',
+            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
+        ]);
+
+        // Cari dan update aktivitas
+        $activity = Activity::findOrFail($id);
+        $activity->update([
+            'activity_form_id' => $request->activity_form_id,
+            'description' => $request->description,
+            'tanggal_mulai' => $request->tanggal_mulai,
+            'tanggal_selesai' => $request->tanggal_selesai,
+        ]);
+
+        return redirect()->route('user.activities.index')
+            ->with('success', 'Aktivitas berhasil diperbarui.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        //
+        $activity = Activity::findOrFail($id);
+        $activity->delete();
+
+        return redirect()->route('user.activities.index')
+            ->with('success', 'Aktivitas berhasil dihapus.');
     }
 }

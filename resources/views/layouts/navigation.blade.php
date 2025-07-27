@@ -6,7 +6,7 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
+                        <img src="{{ asset('images/logo.png') }}" alt="Logo" width="50">
                     </a>
                 </div>
 
@@ -17,11 +17,24 @@
                     </x-nav-link>
                 </div>
 
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('forms.index')" :active="request()->routeIs('forms.*')">
-                        {{ __('Kegiatan') }}
-                    </x-nav-link>
-                </div>
+                @role('user')
+                <x-nav-link :href="route('user.activities.index')" :active="request()->routeIs('forms.*')">
+                    {{ __('Kegiatan') }}
+                </x-nav-link>
+                @endrole
+
+                @role('admin')
+                <x-nav-link :href="route('admin.forms.index')" :active="request()->routeIs('admin.forms.index')">
+                    {{ __('Kegiatan') }}
+                </x-nav-link>
+
+                <x-nav-link :href="route('admin.status.pengajuan')" :active="request()->routeIs('admin.forms.pengajuan')">
+                    {{ __('Pengajuan') }}
+                </x-nav-link>
+                @endrole
+
+
+
 
 
 
